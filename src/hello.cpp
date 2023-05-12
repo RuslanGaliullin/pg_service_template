@@ -23,7 +23,7 @@ public:
 class Orders final : public userver::server::handlers::HttpHandlerBase {
  public:
   static constexpr std::string_view kName = "handler-orders";
-
+  using HttpHandlerBase::HttpHandlerBase;
   // Orders(const userver::components::ComponentConfig& config,
   //       const userver::components::ComponentContext& component_context)
   //     : HttpHandlerBase(config, component_context),
