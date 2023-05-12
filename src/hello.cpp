@@ -20,7 +20,27 @@ public:
     return service_template::SayHelloTo(request.GetMethod());
   }
 };
+class Orders final : public userver::server::handlers::HttpHandlerBase {
+ public:
+  static constexpr std::string_view kName = "handler-orders";
 
+  // Orders(const userver::components::ComponentConfig& config,
+  //       const userver::components::ComponentContext& component_context)
+  //     : HttpHandlerBase(config, component_context),
+  //       pg_cluster_(
+  //           component_context
+  //               .FindComponent<userver::components::Postgres>("postgres-db-1")
+  //               .GetCluster()) {}
+
+  std::string HandleRequestThrow(
+      const userver::server::http::HttpRequest& request,
+      userver::server::request::RequestContext&) const override {
+    const auto& name = request.GetArg("name");
+    auto user_type = UserType::kFirstTime;
+    return service_template::SayHelloTo("big est.GetMethod()");
+  }
+
+};
 } // namespace
 
 std::string SayHelloTo(std::string_view name) {
