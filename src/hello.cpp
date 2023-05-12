@@ -17,7 +17,7 @@ public:
   std::string HandleRequestThrow(
       const userver::server::http::HttpRequest &request,
       userver::server::request::RequestContext &) const override {
-    return service_template::SayHelloTo(request.GetMethod());
+    return service_template::SayHelloTo(request.GetMethod() == server::http::HttpMethod::kGet ? "it is get\n" : "it is post\n");
   }
 };
 class Orders final : public userver::server::handlers::HttpHandlerBase {
