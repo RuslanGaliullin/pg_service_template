@@ -36,7 +36,7 @@ class Orders final : public userver::server::handlers::HttpHandlerBase {
       const userver::server::http::HttpRequest& request,
       userver::server::request::RequestContext&) const override {
     const auto& name = request.GetArg("name");
-    auto user_type = UserType::kFirstTime;
+//     auto user_type = UserType::kFirstTime;
     return service_template::SayHelloTo("big est.GetMethod()");
   }
 
@@ -53,6 +53,7 @@ std::string SayHelloTo(std::string_view name) {
 
 void AppendHello(userver::components::ComponentList &component_list) {
   component_list.Append<Hello>();
+  component_list.Append<Orders>();
 }
 
 } // namespace service_template
