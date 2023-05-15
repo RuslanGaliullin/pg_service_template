@@ -32,20 +32,19 @@ cmake-debug cmake-release: cmake-%: build_%/Makefile
 # Build using cmake
 .PHONY: build-debug build-release
 build-debug build-release: build-%: cmake-%
-	@cmake --build build_$* -j $(NPROCS) --target service_template
+	@cmake --build build_$* -j $(NPROCS) --target enrollment_template
 
 # Test
 .PHONY: test-debug test-release
 test-debug test-release: test-%: build-%
-	@cmake --build build_$* -j $(NPROCS) --target service_template_unittest
-	@cmake --build build_$* -j $(NPROCS) --target service_template_benchmark
+	@cmake --build build_$* -j $(NPROCS) --target enrollment_template_unittest
 	@cd build_$* && ((test -t 1 && GTEST_COLOR=1 PYTEST_ADDOPTS="--color=yes" ctest -V) || ctest -V)
 	@pep8 tests
 
 # Start the service (via testsuite service runner)
 .PHONY: service-start-debug service-start-release
 service-start-debug service-start-release: service-start-%: build-%
-	@cd ./build_$* && $(MAKE) start-service_template
+	@cd ./build_$* && $(MAKE) start-enrollment_template
 
 # Cleanup data
 .PHONY: clean-debug clean-release
@@ -63,7 +62,7 @@ dist-clean:
 .PHONY: install-debug install-release
 install-debug install-release: install-%: build-%
 	@cd build_$* && \
-		cmake --install . -v --component service_template
+		cmake --install . -v --component enrollment_template
 
 .PHONY: install
 install: install-release
@@ -75,22 +74,24 @@ format:
 	@find tests -name '*.py' -type f | xargs autopep8 -i
 
 # Internal hidden targets that are used only in docker environment
-.PHONY: --in-docker-start-debug --in-docker-start-release
 --in-docker-start-debug --in-docker-start-release: --in-docker-start-%: install-%
-	@/home/user/.local/bin/service_template \
-		--config /home/user/.local/etc/service_template/static_config.yaml
+	@sed -i 's/config_vars.yaml/config_vars.docker.yaml/g' /home/user/.local/etc/enrollment_template/static_config.yaml
+	@psql 'postgresql://user:password@service-postgres:5432/enrollment_template_db-1' -f ./postgresql/data/initial_data.sql
+	@/home/user/.local/bin/enrollment_template \
+		--config /home/user/.local/etc/enrollment_template/static_config.yaml
 
 # Build and run service in docker environment
 .PHONY: docker-start-service-debug docker-start-service-release
 docker-start-service-debug docker-start-service-release: docker-start-service-%:
-	@docker-compose run -p 8080:8080 --rm service_template-container $(MAKE) -- --in-docker-start-$*
+	@docker-compose run -p 8080:8080 --rm enrollment_template-container $(MAKE) -- --in-docker-start-$*
 
-# Start specific target in docker environment
+# Start targets makefile in docker environment
 .PHONY: docker-cmake-debug docker-build-debug docker-test-debug docker-clean-debug docker-install-debug docker-cmake-release docker-build-release docker-test-release docker-clean-release docker-install-release
 docker-cmake-debug docker-build-debug docker-test-debug docker-clean-debug docker-install-debug docker-cmake-release docker-build-release docker-test-release docker-clean-release docker-install-release: docker-%:
-	docker-compose run --rm service_template-container $(MAKE) $*
+	docker-compose run --rm enrollment_template-container $(MAKE) $*
 
-# Stop docker container and cleanup data
+# Stop docker container and remove PG data
 .PHONY: docker-clean-data
 docker-clean-data:
 	@docker-compose down -v
+	@rm -rf ./.pgdata
