@@ -8,11 +8,11 @@ version: "2.3"
 
 services:
     postgres:
-        container_name: db
+        container_name: service-postgres
         image: postgres:15.2-alpine
         environment:
           - POSTGRES_DB=enrollment_template_db-1
-          - POSTGRES_USER=postgres
+          - POSTGRES_USER=user
           - POSTGRES_PASSWORD=password
         ports:
           - 5432
@@ -22,12 +22,12 @@ services:
         networks:
           - postgres
 
-    bds_service-container:
-        image: bds_image 
+    enrollment_template-container:
+        image: ghcr.io/userver-framework/docker-userver-build-base:v1
         privileged: true
         environment:
           - POSTGRES_DB=enrollment_template_db-1
-          - POSTGRES_USER=postgres
+          - POSTGRES_USER=user
           - POSTGRES_PASSWORD=password
           - PREFIX=${PREFIX:-~/.local}
           - CC
@@ -41,9 +41,14 @@ services:
           - CXX
           - MAKE_OPTS
         volumes:
+          - .:/enrollment_template:rw
+          - ./third_party/userver/tools/docker:/tools:ro
           - ${TC_CORES_DIR:-./.cores}:/cores:rw
         ports:
           - 8080:8080
+        working_dir: /enrollment_template
+        entrypoint:
+          - /tools/run_as_user.sh
         depends_on:
           - postgres
         networks:
@@ -52,4 +57,3 @@ services:
 networks:
     postgres:
         driver: bridge
-
