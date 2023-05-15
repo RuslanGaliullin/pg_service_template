@@ -40,15 +40,7 @@ public:
         request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);
         return {};
       }
-
-      if (result_order.AsSingleRow<Order>(userver::storages::postgres::kRowTag)
-              .completed_time.has_value()) {
-        transaction.Rollback();
-        request.SetResponseStatus(
-            userver::server::http::HttpStatus::kBadRequest);
-        return {};
-      }
-
+      LOG_INFO() << "checked request";
       auto result = pg_cluster_->Execute(
           userver::storages::postgres::ClusterHostType::kMaster,
           "UPDATE bds_schema.orders "
