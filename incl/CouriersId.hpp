@@ -33,3 +33,4 @@ namespace bds_service {
 
 void AppendCouriersId(userver::components::ComponentList& component_list);
 }  // namespace bds_service
+

@@ -18,10 +18,10 @@ class Couriers final : public userver::server::handlers::HttpHandlerJsonBase {
       const userver::server::http::HttpRequest& request,
       const userver::formats::json::Value& json,
       userver::server::request::RequestContext&) const override {
-    userver::formats::json::ValueBuilder response;
+
     switch (request.GetMethod()) {
       case userver::server::http::HttpMethod::kGet:
-        return GetValue(json, request);
+        return GetValue(request);
       case userver::server::http::HttpMethod::kPost:
         return PostValue(json, request);
       default:
@@ -35,16 +35,16 @@ class Couriers final : public userver::server::handlers::HttpHandlerJsonBase {
 
  private:
   userver::formats::json::Value GetValue(
-      const userver::formats::json::Value&,
       const userver::server::http::HttpRequest& request) const;
 
   userver::formats::json::Value PostValue(
       const userver::formats::json::Value& json,
       const userver::server::http::HttpRequest& request) const;
 };
+
 userver::formats::json::Value Couriers::GetValue(
-    const userver::formats::json::Value&,
     const userver::server::http::HttpRequest& request) const {
+      
   int limit = 1;
   int offset = 0;
   if (request.HasArg("limit")) {
@@ -53,16 +53,19 @@ userver::formats::json::Value Couriers::GetValue(
   if (request.HasArg("offset")) {
     offset = std::stoi(request.GetArg("offset"));
   }
+  if (limit<0 || offset<0) {
+    request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);
+    return {};
+  }
+
   auto result = pg_cluster_->Execute(
       userver::storages::postgres::ClusterHostType::kMaster,
       "SELECT * from bds_schema.couriers LIMIT $1 OFFSET $2", limit, offset);
   std::vector<Courier> all_curiers;
-  LOG_INFO() << "there are " << all_curiers.size() << " rows in shit\n";
+
   for (size_t i = 0; i < result.Size(); i++) {
-    Courier current;
     auto row = result[i];
-    current = row.As<Courier>(userver::storages::postgres::kRowTag);
-    all_curiers.push_back(current);
+    all_curiers.push_back(row.As<Courier>(userver::storages::postgres::kRowTag));
   }
 
   return userver::formats::json::ValueBuilder(all_curiers).ExtractValue();
@@ -71,8 +74,8 @@ userver::formats::json::Value Couriers::GetValue(
 userver::formats::json::Value Couriers::PostValue(
     const userver::formats::json::Value& json,
     const userver::server::http::HttpRequest& request) const {
+
   auto all_curiers = json["couriers"].As<std::vector<Courier>>();
-  LOG_INFO() << "in table " << all_curiers.size();
   userver::storages::postgres::Transaction transaction = pg_cluster_->Begin(
       "sample_transaction_insert",
       userver::storages::postgres::ClusterHostType::kMaster, {});
@@ -89,12 +92,9 @@ userver::formats::json::Value Couriers::PostValue(
     if (!result.RowsAffected()) {
       transaction.Rollback();
       request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);
-      throw userver::server::handlers::ClientError(
-          userver::server::handlers::ExternalBody{fmt::format("Bad request")});
       return {};
-    } else {
-      LOG_INFO() << "inserted smth in db";
     }
+    // Сохраняем для ответа
     curier.courier_id = result.AsSingleRow<int>();
   }
 
@@ -113,17 +113,10 @@ userver::formats::json::Value Couriers::PostValue(
 }  // namespace
 Courier Parse(const userver::formats::json::Value& json,
               userver::formats::parse::To<Courier>) {
-  std::vector<std::string> times;
-  for (auto& i : json["working_hours"].As<std::vector<std::string>>({})) {
-    times.push_back(i.substr(0, 5));
-    times.push_back(i.substr(6));
-  }
-
-  auto value = Courier{json["courier_id"].As<int>(1),
+  return Courier{json["courier_id"].As<int>(1),
                        json["regions"].As<std::vector<int>>(1),
-                       json["courier_type"].As<std::string>(""), times};
-
-  return value;
+                       json["courier_type"].As<std::string>(""),
+                       json["working_hours"].As<std::vector<std::string>>({})};
 }
 
 userver::formats::json::Value Serialize(
@@ -133,14 +126,7 @@ userver::formats::json::Value Serialize(
   builder["courier_id"] = data.courier_id;
   builder["regions"] = data.regions;
   builder["courier_type"] = data.courier_type;
-  std::vector<std::string> times;
-  for (size_t i = 0; i < data.working_hours.size(); i += 2) {
-    times.push_back(data.working_hours[i] + "-" + data.working_hours[i + 1]);
-  }
-  builder["working_hours"] = std::move(times);
-  // if(data.completed_time.has_value()){
-  //   builder["completed_time"] = data.completed_time;
-  // }
+  builder["working_hours"] = data.working_hours;
   return builder.ExtractValue();
 }
 void AppendCouriers(userver::components::ComponentList& component_list) {

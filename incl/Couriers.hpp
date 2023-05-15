@@ -49,3 +49,4 @@ userver::formats::json::Value Serialize(
 void AppendCouriers(userver::components::ComponentList& component_list);
 
 }  // namespace bds_service
+
