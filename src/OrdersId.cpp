@@ -19,14 +19,14 @@ class OrdersId final : public userver::server::handlers::HttpHandlerJsonBase {
       const userver::server::http::HttpRequest& request,
       const userver::formats::json::Value& json,
       userver::server::request::RequestContext&) const override {
-    LOG_WARNING() << "id is " << std::stoi(request.GetPathArg("order_id"));
+    // LOG_WARNING() << "id is " << std::stoi(request.GetPathArg("order_id"));
 
     auto result = pg_cluster_->Execute(
         userver::storages::postgres::ClusterHostType::kMaster,
         "SELECT * from bds_schema.orders where order_id = $1",
         std::stoi(request.GetPathArg("order_id")));
 
-    if (result.Size() > 0) {
+    if (result.Size() == 1) {
       return userver::formats::json::ValueBuilder(
                  result[0].As<Order>(userver::storages::postgres::kRowTag))
           .ExtractValue();

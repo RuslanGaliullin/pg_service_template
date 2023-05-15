@@ -65,7 +65,6 @@ class CouriersMetaInfo final
         courier_id);
 
     if (result_type.Size() == 0) {
-      request.SetResponseStatus(userver::server::http::HttpStatus::kNotFound);
       return {};
     }
 

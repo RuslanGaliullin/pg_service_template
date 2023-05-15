@@ -59,13 +59,17 @@ userver::formats::json::Value Orders::GetValue(
       "SELECT * from bds_schema.orders LIMIT $1 OFFSET $2", limit, offset);
   std::vector<Order> all_orders;
 
+  if (result.Size() == 0) {
+    request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);
+    return {};
+  }
+
   for (size_t i = 0; i < result.Size(); i++) {
     Order current;
     auto row = result[i];
     current = row.As<Order>(userver::storages::postgres::kRowTag);
     all_orders.push_back(current);
   }
-
   return userver::formats::json::ValueBuilder(all_orders).ExtractValue();
 }
 userver::formats::json::Value Orders::PostValue(
@@ -73,7 +77,6 @@ userver::formats::json::Value Orders::PostValue(
     const userver::server::http::HttpRequest& request) const {
   auto all_orders = json["orders"].As<std::vector<Order>>();
 
-  LOG_INFO() << "in table " << all_orders.size();
   userver::storages::postgres::Transaction transaction = pg_cluster_->Begin(
       "sample_transaction_insert_key_value",
       userver::storages::postgres::ClusterHostType::kMaster, {});
@@ -91,8 +94,6 @@ userver::formats::json::Value Orders::PostValue(
     if (!result.RowsAffected()) {
       transaction.Rollback();
       request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);
-      throw userver::server::handlers::ClientError(
-          userver::server::handlers::ExternalBody{fmt::format("Bad request")});
       return {};
     }
     order.order_id = result.AsSingleRow<int>();
