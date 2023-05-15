@@ -69,8 +69,8 @@ public:
           userver::storages::postgres::ClusterHostType::kMaster,
           "INSERT INTO bds_schema.completed_orders(courier_id, order_id, "
           "complete_date) "
-          "VALUES ($1, $2, $3) " i.courier_id,
-          i.order_id, i.complete_time);
+          "VALUES ($1, $2, $3) ",
+          i.courier_id, i.order_id, i.complete_time);
     }
     transaction.Commit();
     request.SetResponseStatus(userver::server::http::HttpStatus::kCreated);
