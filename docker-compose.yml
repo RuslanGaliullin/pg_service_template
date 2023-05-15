@@ -12,7 +12,7 @@ services:
         image: postgres:15.2-alpine
         environment:
           - POSTGRES_DB=enrollment_template_db-1
-          - POSTGRES_USER=user
+          - POSTGRES_USER=postgres
           - POSTGRES_PASSWORD=password
         ports:
           - 5432
@@ -23,11 +23,11 @@ services:
           - postgres
 
     enrollment_template-container:
-        image: ghcr.io/userver-framework/docker-userver-build-base:v1
+        image: ghcr.io/userver-framework/ubuntu-userver-build-base:v1
         privileged: true
         environment:
           - POSTGRES_DB=enrollment_template_db-1
-          - POSTGRES_USER=user
+          - POSTGRES_USER=postgres
           - POSTGRES_PASSWORD=password
           - PREFIX=${PREFIX:-~/.local}
           - CC
