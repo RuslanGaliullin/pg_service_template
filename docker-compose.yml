@@ -3,7 +3,7 @@
 #docker build -t bds_images .
 #Мы можем проверить работу сервисов с базой данных.
 #Запускаем командой 
-#docker-compose run --rm  -p 8080:8080 bds_service-container
+#docker compose run --rm  -p 8080:8080 bds_service-container
 version: "2.3"
 
 services:
