@@ -26,6 +26,19 @@
   "BAGGAGE_SETTINGS": {
     "allowed_keys": []
   },
+  "USERVER_RPS_CCONTROL": {
+    "down-level": 6,
+    "down-rate-percent": 0,
+    "min-limit": 10,
+    "no-limit-seconds": 1000,
+    "overload-off-seconds": 1,
+    "overload-on-seconds": 1,
+    "up-level": 10,
+    "up-rate-percent": 0,
+    "load-limit-crit-percent": 100
+  },
+  "USERVER_RPS_CCONTROL_ACTIVATED_FACTOR_METRIC": 5,
+  "USERVER_RPS_CCONTROL_ENABLED": true,
   "USERVER_BAGGAGE_ENABLED": false,
   "USERVER_TASK_PROCESSOR_QOS": {
     "default-service": {
