@@ -19,6 +19,7 @@ class OrdersComplete final
       const userver::server::http::HttpRequest& request,
       const userver::formats::json::Value& json,
       userver::server::request::RequestContext&) const override {
+    
     auto completions = json["complete_info"].As<std::vector<Complete>>();
     userver::storages::postgres::Transaction transaction = pg_cluster_->Begin(
         "post_completion",
@@ -50,6 +51,13 @@ class OrdersComplete final
       }
       result_list.push_back(
           result.AsSingleRow<Order>(userver::storages::postgres::kRowTag));
+      pg_cluster_->Execute(
+          userver::storages::postgres::ClusterHostType::kMaster,
+          "INSERT INTO bds_schema.completed_orders(courier_id, order_id, complete_date) "
+          "VALUES ($1, $2, $3) "
+          "ON CONFLICT (courier_id, order_id) "
+          "DO NOTHING",
+          i.courier_id, i.order_id, i.complete_time);
     }
     transaction.Commit();
     request.SetResponseStatus(userver::server::http::HttpStatus::kCreated);

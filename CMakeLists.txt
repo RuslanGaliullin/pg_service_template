@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(pg_service_template CXX)
+project(enrollment_template CXX)
 
 include(third_party/userver/cmake/SetupEnvironment.cmake)
 include(GNUInstallDirs)
@@ -13,14 +13,14 @@ add_library(${PROJECT_NAME}_objs OBJECT
         src/OrdersId.cpp
         incl/Orders.hpp
         src/Orders.cpp
-        incl/OrdersAssign.hpp
-        src/OrdersAssign.cpp
         incl/OrdersComplete.hpp
         src/OrdersComplete.cpp
         incl/Couriers.hpp
         src/Couriers.cpp
         incl/CouriersId.hpp
         src/CouriersId.cpp
+        incl/CouriersMetaInfo.hpp
+        src/CouriersMetaInfo.cpp
         )
 target_link_libraries(${PROJECT_NAME}_objs PUBLIC userver-core userver-postgresql)
 

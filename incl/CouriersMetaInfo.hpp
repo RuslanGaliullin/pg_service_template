@@ -26,11 +26,18 @@
 #include <userver/storages/postgres/io/pg_types.hpp>
 #include <userver/storages/postgres/result_set.hpp>
 #include <userver/utils/assert.hpp>
-#include <userver/utils/datetime/date.hpp>
 #include <userver/utils/time_of_day.hpp>
+#include <userver/utils/datetime/date.hpp>
 #include <vector>
-#include "Orders.hpp"
+#include <chrono>
+#include <iostream>
+#include "Couriers.hpp"
+#include <sstream>
+#include <algorithm>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
 namespace bds_service {
 
-void AppendOrdersAssign(userver::components::ComponentList& component_list);
+void AppendCouriersMetaInfo(userver::components::ComponentList& component_list);
 }  // namespace bds_service
