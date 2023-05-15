@@ -33,7 +33,7 @@ components_manager:
                     overflow_behavior: discard  # Drop logs if the system is too busy to write them down.
 
         tracer:                              # Component that helps to trace execution times and requests in logs.
-            service-name: pg_service_template   # "You know. You all know exactly who I am. Say my name. " (c)
+            service-name: enrollment_template   # "You know. You all know exactly who I am. Say my name. " (c)
 
         dynamic-config:                      # Dynamic config storage options, do nothing
             fs-cache-path: ''
@@ -57,35 +57,35 @@ components_manager:
             throttling_enabled: false
             url_trailing_slash: strict-match
         
-        handler-orders:                    # Finally! Our handler.
-            path: /orders               # Registering handler by URL '/v1/hello'.
-            method: GET,POST                  # It will only reply to POST requests.
-            task_processor: main-task-processor  # Run it on CPU bound task processor
+        handler-orders:                     
+            path: /orders                
+            method: GET,POST                   
+            task_processor: main-task-processor   
 
-        handler-orders-id:                    # Finally! Our handler.
-            path: /orders/{order_id}               # Registering handler by URL '/v1/hello'.
-            method: GET                  # It will only reply to POST requests.
-            task_processor: main-task-processor  # Run it on CPU bound task processor
+        handler-orders-id:                     
+            path: /orders/{order_id}                
+            method: GET                   
+            task_processor: main-task-processor   
 
-        handler-orders-complete:                    # Finally! Our handler.
-            path: /orders/complete            # Registering handler by URL '/v1/hello'.
-            method: POST                  # It will only reply to POST requests.
-            task_processor: main-task-processor  # Run it on CPU bound task processor
+        handler-orders-complete:                     
+            path: /orders/complete             
+            method: POST                   
+            task_processor: main-task-processor      
         
-        handler-orders-assign:                    # Finally! Our handler.
-            path: /orders/assign            # Registering handler by URL '/v1/hello'.
-            method: POST                  # It will only reply to POST requests.
-            task_processor: main-task-processor  # Run it on CPU bound task processor
-        
-        handler-couriers:                    # Finally! Our handler.
-            path: /couriers            # Registering handler by URL '/v1/hello'.
-            method: GET,POST                  # It will only reply to POST requests.
-            task_processor: main-task-processor  # Run it on CPU bound task processor
+        handler-couriers:                     
+            path: /couriers             
+            method: GET,POST                   
+            task_processor: main-task-processor   
             
-        handler-couriers-id:                    # Finally! Our handler.
-            path: /couriers/{courier_id}           # Registering handler by URL '/v1/hello'.
-            method: GET                  # It will only reply to POST requests.
-            task_processor: main-task-processor  # Run it on CPU bound task processor
+        handler-couriers-id:                     
+            path: /couriers/{courier_id}            
+            method: GET                   
+            task_processor: main-task-processor   
+        
+        handler-couriers-meta-info:                     
+            path: /couriers/meta-info/{courier_id}            
+            method: GET                 
+            task_processor: main-task-processor  
 
         postgres-db-1:
             dbconnection: $dbconnection
@@ -95,3 +95,4 @@ components_manager:
 
         dns-client:
             fs-task-processor: fs-task-processor
+

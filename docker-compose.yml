@@ -1,53 +1,55 @@
+#Это docker-compose.yaml
+#После того, как мы собрали образ из Dockerfile командой 
+#docker build -t bds_images .
+#Мы можем проверить работу сервисов с базой данных.
+#Запускаем командой 
+#docker-compose run --rm  -p 8080:8080 bds_service-container
 version: "2.3"
 
 services:
-  postgres:
-    container_name: service-postgres
-    image: postgres:15.2-alpine
-    environment:
-      - POSTGRES_DB=enrollment_template_db-1
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-    ports:
-      - 5432
-    volumes:
-      - ./postgresql/schemas:/docker-entrypoint-initdb.d
-      - ./.pgdata:/var/lib/postgresql/data
-    networks:
-      - postgres
+    postgres:
+        container_name: db
+        image: postgres:15.2-alpine
+        environment:
+          - POSTGRES_DB=postgres
+          - POSTGRES_USER=postgres
+          - POSTGRES_PASSWORD=password
+        ports:
+          - 5432
+        volumes:
+          - ./postgresql/schemas:/docker-entrypoint-initdb.d
+          - ./.pgdata:/var/lib/postgresql/data
+        networks:
+          - postgres
 
-  enrollment_template-container:
-    image: ghcr.io/userver-framework/docker-userver-build-base:v1a
-    privileged: true
-    environment:
-      - POSTGRES_DB=enrollment_template_db-1
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - PREFIX=${PREFIX:-~/.local}
-      - CC
-      - CCACHE_DIR=/enrollment_template/.ccache
-      - CCACHE_HASHDIR
-      - CCACHE_NOHASHDIR
-      - CCACHE_PREFIX
-      - CCACHE_SIZE
-      - CMAKE_OPTS
-      - CORES_DIR=/cores
-      - CXX
-      - MAKE_OPTS
-    volumes:
-      - .:/enrollment_template:rw
-      - ./third_party/userver/tools/docker:/tools:ro
-      - ${TC_CORES_DIR:-./.cores}:/cores:rw
-    ports:
-      - 8080:8080
-    working_dir: /enrollment_template
-    entrypoint:
-      - /tools/run_as_user.sh
-    depends_on:
-      - postgres
-    networks:
-      - postgres
+    bds_service-container:
+        image: bds_image 
+        privileged: true
+        environment:
+          - POSTGRES_DB=postgres
+          - POSTGRES_USER=postgres
+          - POSTGRES_PASSWORD=password
+          - PREFIX=${PREFIX:-~/.local}
+          - CC
+          - CCACHE_DIR=/enrollment_template/.ccache
+          - CCACHE_HASHDIR
+          - CCACHE_NOHASHDIR
+          - CCACHE_PREFIX
+          - CCACHE_SIZE
+          - CMAKE_OPTS
+          - CORES_DIR=/cores
+          - CXX
+          - MAKE_OPTS
+        volumes:
+          - ${TC_CORES_DIR:-./.cores}:/cores:rw
+        ports:
+          - 8080:8080
+        depends_on:
+          - postgres
+        networks:
+          - postgres
 
 networks:
-  postgres:
-    driver: bridge
+    postgres:
+        driver: bridge
+

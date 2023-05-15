@@ -17,7 +17,7 @@ class CouriersMetaInfo final : public userver::server::handlers::HttpHandlerJson
 
   userver::formats::json::Value HandleRequestJsonThrow(
       const userver::server::http::HttpRequest& request,
-      const userver::formats::json::Value& json,
+      const userver::formats::json::Value&C,
       userver::server::request::RequestContext&) const override {
 
     if(!request.HasArg("startDate")){
@@ -53,7 +53,7 @@ class CouriersMetaInfo final : public userver::server::handlers::HttpHandlerJson
         "WHERE couriers.courier_id = $1 ",
         courier_id);
     
-    //  LOG_INFO()<<"Found orders: "<<result_earnings.Size()<<" and couriers "<<result_type.Size();
+    //  а
     
     if (result_type.Size() == 0) {
       request.SetResponseStatus(userver::server::http::HttpStatus::kNotFound);
@@ -65,7 +65,7 @@ class CouriersMetaInfo final : public userver::server::handlers::HttpHandlerJson
     int total_count = result_earnings.Front()["cnt"].As<int>();
     auto found_courier = result_type.AsSingleRow<Courier>(userver::storages::postgres::kRowTag);
 
-    int rating = 0;
+    double rating = 0;
     auto hours = std::chrono::duration_cast<std::chrono::hours>(end_date_point - start_date_point);
 
     if (hours.count() <= 0) {
@@ -77,13 +77,13 @@ class CouriersMetaInfo final : public userver::server::handlers::HttpHandlerJson
 
     if (found_courier.courier_type == "FOOT") {
       earnings = total_cost * 2;
-      rating = 3 * total_count / hours.count() ;
-    }else if(found_courier.courier_type == "BIKE"){
+      rating = 3.0 * total_count / hours.count() ;
+    } else if(found_courier.courier_type == "BIKE"){
       earnings = total_cost * 3;
-      rating = 2 * total_count / hours.count() ;
-    }else if (found_courier.courier_type == "AUTO"){
+      rating = 2.0 * total_count / hours.count() ;
+    } else if (found_courier.courier_type == "AUTO"){
       earnings = total_cost * 4;
-      rating = total_count / hours.count() ;
+      rating = 1.0 * total_count / hours.count() ;
     }
 
     userver::formats::json::ValueBuilder builder(found_courier);
@@ -102,3 +102,4 @@ void AppendCouriersMetaInfo(userver::components::ComponentList& component_list) 
   component_list.Append<CouriersMetaInfo>();
 }
 }  // namespace bds_service
+

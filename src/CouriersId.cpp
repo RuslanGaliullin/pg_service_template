@@ -17,14 +17,13 @@ class CouriersId final : public userver::server::handlers::HttpHandlerJsonBase {
 
   userver::formats::json::Value HandleRequestJsonThrow(
       const userver::server::http::HttpRequest& request,
-      const userver::formats::json::Value& json,
+      const userver::formats::json::Value&,
       userver::server::request::RequestContext&) const override {
     
     auto result = pg_cluster_->Execute(
         userver::storages::postgres::ClusterHostType::kMaster,
         "SELECT * from bds_schema.couriers where courier_id = $1",
         std::stoi(request.GetPathArg("courier_id")));
-    
     if (result.Size() > 0) {
       return userver::formats::json::ValueBuilder(
                  result[0].As<Courier>(userver::storages::postgres::kRowTag))
@@ -42,3 +41,4 @@ void AppendCouriersId(userver::components::ComponentList& component_list) {
   component_list.Append<CouriersId>();
 }
 }  // namespace bds_service
+
