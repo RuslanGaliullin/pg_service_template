@@ -1,17 +1,17 @@
 #Это docker-compose.yaml
 #После того, как мы собрали образ из Dockerfile командой 
-#docker build -t bds_images .
+#docker build -t bds_image .
 #Мы можем проверить работу сервисов с базой данных.
 #Запускаем командой 
-#docker compose run --rm  -p 8080:8080 bds_service-container
+#docker-compose run --rm  -p 8080:8080 bds_service-container
 version: "2.3"
 
 services:
     postgres:
-        container_name: service-postgres
-        image: postgres:12
+        container_name: db
+        image: postgres:15.2-alpine
         environment:
-          - POSTGRES_DB=enrollment_template_db-1
+          - POSTGRES_DB=postgres
           - POSTGRES_USER=postgres
           - POSTGRES_PASSWORD=password
         ports:
@@ -22,11 +22,11 @@ services:
         networks:
           - postgres
 
-    enrollment_template-container:
-        image: ghcr.io/userver-framework/ubuntu-userver-build-base:v1
+    bds_service-container:
+        image: bds_image 
         privileged: true
         environment:
-          - POSTGRES_DB=enrollment_template_db-1
+          - POSTGRES_DB=postgres
           - POSTGRES_USER=postgres
           - POSTGRES_PASSWORD=password
           - PREFIX=${PREFIX:-~/.local}
@@ -41,14 +41,9 @@ services:
           - CXX
           - MAKE_OPTS
         volumes:
-          - .:/enrollment_template:rw
-          - ./third_party/userver/tools/docker:/tools:ro
           - ${TC_CORES_DIR:-./.cores}:/cores:rw
         ports:
           - 8080:8080
-        working_dir: /enrollment_template
-        entrypoint:
-          - /tools/run_as_user.sh
         depends_on:
           - postgres
         networks:
