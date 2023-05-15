@@ -26,7 +26,7 @@ public:
 
     std::vector<Order> result_list;
     for (auto &i : completions) {
-      auto result_courier = pg_cluster_->Execute(
+	  auto result_courier = pg_cluster_->Execute(
           userver::storages::postgres::ClusterHostType::kMaster,
           "SELECT * from bds_schema.couriers where courier_id = $1",
           i.courier_id);
@@ -40,7 +40,15 @@ public:
         request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);
         return {};
       }
-      LOG_INFO() << "checked request";
+      auto result_history = pg_cluster_->Execute(
+          userver::storages::postgres::ClusterHostType::kMaster,
+          "SELECT * from bds_schema.completed_orders where order_id = $1", i.order_id);
+
+      if (result_history.Size() != 0) {
+        transaction.Rollback();
+        request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);
+        return {};
+      }
       auto result = pg_cluster_->Execute(
           userver::storages::postgres::ClusterHostType::kMaster,
           "UPDATE bds_schema.orders "
