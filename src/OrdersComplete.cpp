@@ -37,7 +37,7 @@ public:
 
       if (result_courier.Size() == 0 || result_order.Size() == 0) {
         transaction.Rollback();
-        request.SetResponseStatus(userver::server::http::HttpStatus::kNotFound);
+        request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);
         return {};
       }
 
